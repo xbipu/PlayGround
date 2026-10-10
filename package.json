@@ -1,0 +1,15 @@
+{
+  "name": "advisor-voice-app",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Real-time speech-to-speech AI assistant for professional advisors and employers",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^6.0.0"
+  }
+}

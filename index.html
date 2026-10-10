@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>J.A.R.V.I.S. — Real-time Speech AI Console</title>
+  <meta name="description" content="JARVIS-style voice console: local Bangla + English speech-to-speech AI with timers, reminders, motivation and advisor modes." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎙️</text></svg>" />
+</head>
+<body>
+  <div id="app">
+    <div id="boot" class="boot" aria-hidden="true">
+      <div class="boot-core">⚛️</div>
+      <div class="boot-title">J.A.R.V.I.S.</div>
+      <div class="boot-sub">Just A Rather Very Intelligent System</div>
+      <div class="boot-bar"><span id="bootFill"></span></div>
+      <div id="bootMsg" class="boot-msg">Initializing core…</div>
+    </div>
+    <header class="topbar">
+      <div class="brand">
+        <span class="logo" aria-hidden="true">⚛️</span>
+        <div>
+          <h1>J.A.R.V.I.S.</h1>
+          <p>Voice console · বাংলা + English · Advisor inside</p>
+        </div>
+      </div>
+      <div class="top-actions">
+        <div id="sttSupport" class="pill" title="Speech recognition support">checking mic…</div>
+        <button id="settingsBtn" class="ghost-btn" aria-label="Open settings">⚙️ Settings</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <aside class="panel modes">
+        <h2>Assistant mode</h2>
+        <div class="mode-grid" role="tablist" aria-label="Assistant mode">
+          <button class="mode-card active" data-mode="jarvis" role="tab" aria-selected="true">
+            <span class="mode-emoji">⚛️</span>
+            <strong>Jarvis</strong>
+            <small>Motivation · timers · reminders · commands</small>
+          </button>
+          <button class="mode-card" data-mode="advisor" role="tab" aria-selected="false">
+            <span class="mode-emoji">💼</span>
+            <strong>Professional Advisor</strong>
+            <small>Strategy · finance · growth · decisions</small>
+          </button>
+          <button class="mode-card" data-mode="employer" role="tab" aria-selected="false">
+            <span class="mode-emoji">🧑‍💼</span>
+            <strong>Employer / Manager</strong>
+            <small>Hiring · HR · reviews · scheduling</small>
+          </button>
+          <button class="mode-card" data-mode="worker" role="tab" aria-selected="false">
+            <span class="mode-emoji">🛠️</span>
+            <strong>Worker Coach</strong>
+            <small>Skills · pay · interviews · growth</small>
+          </button>
+        </div>
+
+        <div id="deck" class="deck" aria-label="Jarvis command deck">
+          <div class="deck-item">🕒 <strong id="clock">--:--</strong></div>
+          <div class="deck-item quote" id="quoteText">💡 "…"</div>
+        </div>
+
+        <h2>Reminders</h2>
+        <ul id="remindersList" class="reminders"></ul>
+
+        <h2>Persona</h2>
+        <select id="personaSelect" aria-label="Persona"></select>
+        <p id="personaDesc" class="muted"></p>
+
+        <h2>Quick voice prompts</h2>
+        <div id="chips" class="chips"></div>
+
+        <h2>Session</h2>
+        <div class="row">
+          <button id="exportBtn" class="ghost-btn">⬇ Export</button>
+          <button id="copyBtn" class="ghost-btn">⧉ Copy</button>
+          <button id="clearBtn" class="ghost-btn danger">🗑 Clear</button>
+        </div>
+        <label class="check"><input type="checkbox" id="autoSpeak" checked /> Speak replies out loud</label>
+        <label class="check"><input type="checkbox" id="handsfree" /> Hands-free conversation (auto-listen)</label>
+        <label class="check"><input type="checkbox" id="bargeIn" checked /> Barge-in: my voice stops the AI</label>
+      </aside>
+
+      <section class="panel stage hud">
+        <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+        <div class="hud-head">
+          <span class="hud-title">J.A.R.V.I.S.</span>
+          <span class="hud-sub">VOICE CONSOLE</span>
+          <span id="hudClock" class="hud-clock">--:--:--</span>
+          <span class="hud-live"><i></i>LIVE</span>
+        </div>
+        <div id="statusBar" class="status idle">
+          <span id="statusDot" class="dot"></span>
+          <span id="statusText">Tap the mic and talk — I reply by voice.</span>
+        </div>
+
+        <div class="reactor-wrap">
+          <div class="reactor" id="reactor">
+            <svg class="rings" viewBox="0 0 200 200" aria-hidden="true">
+              <circle class="ring-a" cx="100" cy="100" r="96" />
+              <circle class="ring-b" cx="100" cy="100" r="80" />
+              <circle class="ring-c" cx="100" cy="100" r="62" />
+            </svg>
+            <button id="micBtn" class="orb reactor-core" aria-label="Start talking" aria-pressed="false">
+              <span class="orb-core">🎤</span>
+            </button>
+          </div>
+          <div class="orb-meta">
+            <div id="levelMeter" class="level"><span></span></div>
+            <p id="interim" class="interim" aria-live="polite"></p>
+          </div>
+        </div>
+
+        <canvas id="viz" class="viz" height="64" aria-hidden="true"></canvas>
+
+        <div class="tiles" aria-label="System dashboard">
+          <div class="tile"><span class="tile-label">⏱ TIME</span><strong id="statTime">--:--</strong></div>
+          <div class="tile"><span class="tile-label">📝 REMINDERS</span><strong id="statRem">0</strong></div>
+          <div class="tile"><span class="tile-label">💬 TURNS</span><strong id="statTurns">0</strong></div>
+          <div class="tile"><span class="tile-label">📶 CORE</span><strong id="statSys">Online</strong></div>
+        </div>
+
+        <div class="sysbars" aria-hidden="true">
+          <div class="sysbar"><label>⚡ CORE</label><div class="bar"><span id="barCore"></span></div></div>
+          <div class="sysbar"><label>🔋 PWR</label><div class="bar"><span id="barPwr"></span></div></div>
+          <div class="sysbar"><label>📡 LINK</label><div class="bar"><span id="barNet"></span></div></div>
+        </div>
+
+        <div class="controls">
+          <button id="stopBtn" class="ghost-btn">⏹ Stop voice</button>
+          <button id="repeatBtn" class="ghost-btn">🔁 Repeat last reply</button>
+          <select id="langSelect" aria-label="Recognition language">
+            <option value="en-US">English (US)</option>
+            <option value="en-GB">English (UK)</option>
+            <option value="bn-BD">বাংলা (Bangladesh)</option>
+            <option value="bn-IN">বাংলা (India)</option>
+            <option value="es-ES">Español</option>
+            <option value="fr-FR">Français</option>
+            <option value="de-DE">Deutsch</option>
+            <option value="hi-IN">हिन्दी</option>
+            <option value="ar-SA">العربية</option>
+            <option value="zh-CN">中文</option>
+          </select>
+        </div>
+
+        <div id="transcript" class="transcript" aria-live="polite" aria-label="Conversation transcript"></div>
+
+        <form id="composer" class="composer" autocomplete="off">
+          <input id="textInput" type="text" placeholder="Or type here and press Enter — AI still speaks the reply…" aria-label="Type a message" />
+          <button type="submit" class="send-btn">Send ➤</button>
+        </form>
+        <p class="hint muted">Free built-in Jarvis works with no key — English + বাংলা. Select বাংলা above and speak Bangla; I answer in Bangla. Add an API key in Settings for cloud answers. Mic uses your browser's speech recognition (Chrome/Edge best).</p>
+      </section>
+    </main>
+
+    <dialog id="settingsDialog">
+      <form method="dialog" class="settings">
+        <h2>⚙️ Voice &amp; AI settings</h2>
+        <label>AI voice
+          <select id="voiceSelect"></select>
+        </label>
+        <div class="grid2">
+          <label>Speed <span id="rateVal">1.0</span>
+            <input id="rate" type="range" min="0.5" max="1.6" step="0.05" value="1" />
+          </label>
+          <label>Pitch <span id="pitchVal">1.0</span>
+            <input id="pitch" type="range" min="0.5" max="1.6" step="0.05" value="1" />
+          </label>
+        </div>
+        <label class="check"><input type="checkbox" id="continuousTalk" checked /> Keep mic open after AI finishes (conversation loop)</label>
+        <fieldset>
+          <legend>Cloud AI (optional, OpenAI-compatible)</legend>
+          <label>API base URL <input id="apiBase" type="url" placeholder="https://api.openai.com/v1" /></label>
+          <label>Model <input id="apiModel" type="text" placeholder="gpt-4o-mini" /></label>
+          <label>API key <input id="apiKey" type="password" placeholder="sk-… (stored only in this browser)" autocomplete="off" /></label>
+          <p class="muted small">Leave empty to use the free built-in advisor engine. Key never leaves your browser except to call the API you entered.</p>
+        </fieldset>
+        <div class="row">
+          <button id="testVoiceBtn" class="ghost-btn" type="button">🔊 Test voice</button>
+          <button class="send-btn" value="close" type="submit">Done</button>
+        </div>
+      </form>
+    </dialog>
+  </div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
